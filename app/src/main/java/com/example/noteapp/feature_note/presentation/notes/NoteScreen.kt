@@ -19,6 +19,8 @@ import androidx.navigation.NavController
 import com.example.noteapp.feature_note.presentation.notes.components.NoteItem
 import com.example.noteapp.feature_note.presentation.notes.components.OrderSection
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.platform.testTag
+import com.example.noteapp.core.util.TestTags
 import com.example.noteapp.feature_note.presentation.util.Screen
 import kotlinx.coroutines.launch
 
@@ -34,7 +36,7 @@ fun NoteScreen(navController: NavController, viewModel: NotesViewModel = hiltVie
             onClick = { navController.navigate(Screen.AddEditNoteScreen.route) },
             backgroundColor = MaterialTheme.colors.primary
         ) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
         }
     }, scaffoldState = scaffoldState) {
         Column(
@@ -63,6 +65,7 @@ fun NoteScreen(navController: NavController, viewModel: NotesViewModel = hiltVie
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp)
+                        .testTag(TestTags.ORDER_SECTION)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))

@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.noteapp.core.util.TestTags
 import com.example.noteapp.feature_note.domain.model.Note
 import com.example.noteapp.feature_note.presentation.add_edit_note.components.TransparentHitTextField
 import kotlinx.coroutines.flow.collectLatest
@@ -61,7 +62,7 @@ fun AddEditNoteScreen(
             onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) },
             backgroundColor = MaterialTheme.colors.primary
         ) {
-            Icon(imageVector = Icons.Default.Save, contentDescription = "Save Note")
+            Icon(imageVector = Icons.Default.Save, contentDescription = "Save")
         }
     }, scaffoldState = scaffoldState) {
         Column(
@@ -114,7 +115,8 @@ fun AddEditNoteScreen(
                 },
                 isHintVisible = titleState.isHintVisible,
                 singleLine = true,
-                textStyle = MaterialTheme.typography.h5
+                textStyle = MaterialTheme.typography.h5,
+                testTag = TestTags.TITLE_TEXT_FIELD
             )
             Spacer(modifier = Modifier.height(16.dp))
             TransparentHitTextField(
@@ -129,7 +131,8 @@ fun AddEditNoteScreen(
                 isHintVisible = contentState.isHintVisible,
                 singleLine = true,
                 textStyle = MaterialTheme.typography.h5,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                testTag = TestTags.CONTENT_TEXT_FIELD
             )
         }
     }
