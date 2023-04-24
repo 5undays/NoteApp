@@ -86,7 +86,7 @@ class GetNotesTest {
 
     @Test
     fun `Order notes by color descending, correct order`() = runBlocking {
-        val notes = getNotes(NoteOrder.Date(OrderType.Descending)).first()
+        val notes = getNotes(NoteOrder.Color(OrderType.Descending)).first()
 
         for (i in 0..notes.size - 2) {
             assertThat(notes[i].color).isGreaterThan(notes[i + 1].color)

@@ -11,10 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -25,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.noteapp.core.util.TestTags
 import com.example.noteapp.feature_note.domain.model.Note
+import com.example.noteapp.feature_note.presentation.add_edit_note.components.CustomMultiHintTextField
 import com.example.noteapp.feature_note.presentation.add_edit_note.components.TransparentHitTextField
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -32,34 +30,21 @@ import kotlinx.coroutines.launch
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun AddEditNoteScreen(
-    navController: NavController,
-    noteColor: Int,
-    viewModel: AddEditNoteViewModel = hiltViewModel()
+    navController: NavController
+    , noteColor: Int
+    , noteTitle: NoteTextFieldState
+    , noteContent: NoteTextFieldState
+    , onEvent: (AddEditNoteEvent) -> Unit
+    , scaffoldState: ScaffoldState
 ) {
-    val titleState = viewModel.noteTitle.value
-    val contentState = viewModel.noteContent.value
-    val scaffoldState = rememberScaffoldState()
-
     val noteBackgroundAnimatable = remember {
-        Animatable(initialValue = Color(if (noteColor != -1) noteColor else viewModel.noteColor.value))
+        Animatable(initialValue = Color(noteColor))
     }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collectLatest { event ->
-            when (event) {
-                is AddEditNoteViewModel.UiEvent.ShowSnackbar -> {
-                    scaffoldState.snackbarHostState.showSnackbar(message = event.message)
-                }
-                is AddEditNoteViewModel.UiEvent.save -> {
-                    navController.navigateUp()
-                }
-            }
-        }
-    }
     Scaffold(floatingActionButton = {
         FloatingActionButton(
-            onClick = { viewModel.onEvent(AddEditNoteEvent.SaveNote) },
+            onClick = { onEvent(AddEditNoteEvent.SaveNote) },
             backgroundColor = MaterialTheme.colors.primary
         ) {
             Icon(imageVector = Icons.Default.Save, contentDescription = "Save")
@@ -79,59 +64,51 @@ fun AddEditNoteScreen(
             ) {
                 Note.notesColors.forEach { color ->
                     val colorInt = color.toArgb()
-                    Box(
-                        modifier = Modifier
-                            .size(50.dp)
-                            .shadow(15.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(color)
-                            .border(
-                                width = 3.dp, color = if (viewModel.noteColor.value == colorInt) {
-                                    Color.Black
-                                } else Color.Transparent,
-                                shape = CircleShape
-                            )
-                            .clickable {
-                                scope.launch {
-                                    noteBackgroundAnimatable.animateTo(
-                                        targetValue = Color(colorInt),
-                                        animationSpec = tween(durationMillis = 500)
-                                    )
-                                }
-                                viewModel.onEvent(AddEditNoteEvent.ChangeColor(colorInt))
+                    Box(modifier = Modifier
+                        .size(50.dp)
+                        .shadow(15.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(color)
+                        .border(
+                            width = 3.dp, color = if (noteColor == colorInt) {
+                                Color.Black
+                            } else Color.Transparent, shape = CircleShape
+                        )
+                        .clickable {
+                            scope.launch {
+                                noteBackgroundAnimatable.animateTo(
+                                    targetValue = Color(colorInt),
+                                    animationSpec = tween(durationMillis = 500)
+                                )
                             }
-                    )
+                            onEvent(AddEditNoteEvent.ChangeColor(colorInt))
+                        })
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
             TransparentHitTextField(
-                text = titleState.text,
-                hint = titleState.hint,
+                text = noteTitle.text,
+                hint = noteTitle.hint,
                 onValueChange = {
-                    viewModel.onEvent(AddEditNoteEvent.EnteredTitle(it))
+                    onEvent(AddEditNoteEvent.EnteredTitle(it))
                 },
                 onFocusChange = {
-                    viewModel.onEvent(AddEditNoteEvent.ChangeTitleFocus(it))
+                    onEvent(AddEditNoteEvent.ChangeTitleFocus(it))
                 },
-                isHintVisible = titleState.isHintVisible,
+                isHintVisible = noteTitle.isHintVisible,
                 singleLine = true,
                 textStyle = MaterialTheme.typography.h5,
                 testTag = TestTags.TITLE_TEXT_FIELD
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TransparentHitTextField(
-                text = contentState.text,
-                hint = contentState.hint,
-                onValueChange = {
-                    viewModel.onEvent(AddEditNoteEvent.EnteredContent(it))
+            CustomMultiHintTextField(
+                value = noteContent.text,
+                onValueChanged = {
+                    onEvent(AddEditNoteEvent.EnteredContent(it))
                 },
-                onFocusChange = {
-                    viewModel.onEvent(AddEditNoteEvent.ChangeContentFocus(it))
-                },
-                isHintVisible = contentState.isHintVisible,
-                singleLine = true,
-                textStyle = MaterialTheme.typography.h5,
+                hintText = noteContent.hint,
                 modifier = Modifier.fillMaxSize(),
+                textStyle = MaterialTheme.typography.h5,
                 testTag = TestTags.CONTENT_TEXT_FIELD
             )
         }
